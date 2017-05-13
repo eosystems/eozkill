@@ -14,6 +14,7 @@ gem 'convergence'
 
 group :development do
   gem 'listen'
+  gem 'annotate'
 end
 
 group :test do
