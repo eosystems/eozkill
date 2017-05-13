@@ -9,26 +9,6 @@ class ElasticZkill
     @client_z = ZkillClient.new
   end
 
-  def fetch_loss(url)
-    r = @client_z.general_fetch(url)
-  end
-
-  def sample
-    @client_z.general_fetch("/losses/regionID/10000002/")
-  end
-
-  def sample2
-    response = @client_z.general_fetch("/losses/regionID/10000069/")
-    binding.pry
-    response.items.each do |item|
-      begin
-        @client_e.create_document("zkill", item["killID"], item)
-      rescue Exception => e
-        Rails.logger.warn e.message
-      end
-    end
-  end
-
   def loss_item(item)
     solarSystem = SolarSystem.find(item["solarSystemID"])
     region = Region.find(solarSystem.region_id)
@@ -42,7 +22,7 @@ class ElasticZkill
     location = InvItem.find(item["zkb"]["locationID"])
     j = {
       killID: item["killID"],
-      killTime: item["killTime"],
+      killTime: item["killTime"].to_time.to_i,
       regionID: region.id,
       regionName: region.name,
       solarSystemID: item["solarSystemID"],
@@ -70,20 +50,54 @@ class ElasticZkill
     day_start = day_s + "0000"
     day_end = (day_s.to_date + 1).strftime("%Y%m%d").to_s + "0000"
 
-    end_flg = false
-    page = 1
+    begin
+      delete_index(day_s)
+    rescue Exception => e
+    end
+    create_index(day_s)
+    put_mapping(day_s)
+
+    fetch_by_day(day_start, day_end, 10000069, create_loss_index_name(day_s))
+  end
+
+  def fetch_by_day_main(day_s)
+    day_start = day_s + "0000"
+    day_end = (day_s.to_date + 1).strftime("%Y%m%d").to_s + "0000"
 
     begin
       delete_index(day_s)
     rescue Exception => e
     end
     create_index(day_s)
-
     put_mapping(day_s)
 
+    fetch_by_day_and_region_id(day_start, day_end, 10000069, create_loss_index_name(day_s))
+    fetch_by_day_and_region_id(day_start, day_end, 10000033, create_loss_index_name(day_s))
+    fetch_by_day_and_region_id(day_start, day_end, 10000048, create_loss_index_name(day_s))
+    fetch_by_day_and_region_id(day_start, day_end, 10000064, create_loss_index_name(day_s))
+  end
+
+  def create_loss_index_name(day_s)
+    "zkill_loss_" + day_s
+  end
+
+  def fetch_by_day_and_region_id(day_start, day_end, region_id, index_name)
+    Rails.logger.info("start_region:" + region_id.to_s)
+    solar_systems = SolarSystem.where(region_id: region_id)
+    solar_systems.each do |solar_system|
+      Rails.logger.info("start_solar_system:" + solar_system.name)
+      fetch_by_day_and_solar_system_id(day_start, day_end, solar_system.id, index_name)
+      Rails.logger.info("end_solar_system:" + solar_system.name)
+    end
+    Rails.logger.info("end_region:" + region_id.to_s)
+  end
+
+  def fetch_by_day_and_solar_system_id(day_start, day_end, solar_system_id, index_name)
+    end_flg = false
+    page = 1
+
     while !end_flg
-      response = @client_z.general_fetch("/losses/solarSystemID/30002813/startTime/#{day_start}/endTime/#{day_end}/page/#{page}/no-items/",
-                                         current_page: page)
+      response = @client_z.fetch_loss_by_day_and_region(day_start, day_end, solar_system_id, page)
       end_flg = true if !response.is_success || response.end_flg
       page = page + 1
 
@@ -91,7 +105,8 @@ class ElasticZkill
       items.each do |item|
         r = loss_item(item)
         begin
-          @client_e.create_document("zkill_loss_#{day_s}", item["killID"], r)
+          @client_e.create_document(index_name, item["killID"], r)
+          Rails.logger.info("create_document: " + item["killID"].to_s)
         rescue Exception => e
           Rails.logger.warn e.message
         end
@@ -110,9 +125,7 @@ class ElasticZkill
           "type" : "long"
         },
         "killTime" : {
-          "type" : "date",
-          "store" : "yes",
-          "format" : "YYYY-mm-dd HH:mm:ss"
+          "type" : "date"
         },
         "regionID" : {
           "type" : "long"

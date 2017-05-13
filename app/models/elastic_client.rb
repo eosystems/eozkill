@@ -4,7 +4,7 @@ class ElasticClient
   @client = nil
 
   def initialize
-    @client = Elasticsearch::Client.new({log: true, hosts: {host: 'localhost'}})
+    @client = Elasticsearch::Client.new({log: false, hosts: {host: 'localhost'}})
   end
 
   def health_check
