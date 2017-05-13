@@ -9,6 +9,8 @@ gem 'sqlite3'
 gem 'elasticsearch', git: 'git://github.com/elasticsearch/elasticsearch-ruby.git'
 gem 'elasticsearch-rails', '5.0'
 gem 'elasticsearch-model', '5.0'
+gem 'mysql2', '0.3.19'
+gem 'convergence'
 
 group :development do
   gem 'listen'
