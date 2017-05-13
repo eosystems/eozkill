@@ -1,0 +1,12 @@
+defaults: &defaults
+  applications:
+    zkill_user_agent: ""
+    test_mode: false #true/false
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production:
+  <<: *defaults

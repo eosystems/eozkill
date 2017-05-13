@@ -5,8 +5,10 @@ gem 'rails', '5.0.2'
 gem 'settingslogic'
 gem 'active_hash'
 gem 'faraday'
+gem 'sqlite3'
 
 group :development do
+  gem 'listen'
 end
 
 group :test do
