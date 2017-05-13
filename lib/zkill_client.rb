@@ -13,6 +13,12 @@ class ZkillClient
     url.split(/\//).last
   end
 
+  def general_fetch(param, current_page: 1)
+    path = ZKILL_API_BASE_URL + param.to_s
+
+    ZkillResponse.parse_j(get_request_to(path), current_page: current_page)
+  end
+
   private
 
   def build_api_connection
