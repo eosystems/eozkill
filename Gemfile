@@ -6,6 +6,9 @@ gem 'settingslogic'
 gem 'active_hash'
 gem 'faraday'
 gem 'sqlite3'
+gem 'elasticsearch', git: 'git://github.com/elasticsearch/elasticsearch-ruby.git'
+gem 'elasticsearch-rails', '5.0'
+gem 'elasticsearch-model', '5.0'
 
 group :development do
   gem 'listen'
