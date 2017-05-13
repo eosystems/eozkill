@@ -32,7 +32,13 @@ class ElasticZkill
   def loss_item(item)
     solarSystem = SolarSystem.find(item["solarSystemID"])
     region = Region.find(solarSystem.region_id)
-    ship = Ship.find(item["victim"]["shipTypeID"])
+    ship = nil
+    begin
+      ship = Ship.find(item["victim"]["shipTypeID"])
+    rescue Exception => e
+      ship = Ship.find(670)
+    end
+
     location = InvItem.find(item["zkb"]["locationID"])
     j = {
       killID: item["killID"],
@@ -85,7 +91,7 @@ class ElasticZkill
       items.each do |item|
         r = loss_item(item)
         begin
-          @client_e.create_document("zkill", item["killID"], r)
+          @client_e.create_document("zkill_loss_#{day_s}", item["killID"], r)
         rescue Exception => e
           Rails.logger.warn e.message
         end
@@ -112,62 +118,102 @@ class ElasticZkill
           "type" : "long"
         },
         "regionName" : {
-          "type" : "string",
-          "store" : "yes",
-          "index" : "not_analyzed"
+          "index" : "not_analyzed",
+          "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+            }
+          }
         },
         "solarSystemID" : {
           "type" : "long"
         },
         "solarSystemName" : {
-          "type" : "string",
-          "store" : "yes",
-          "index" : "not_analyzed"
+          "index" : "not_analyzed",
+          "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+            }
+          }
         },
         "locationID" : {
           "type" : "long"
         },
         "locationName" : {
-          "type" : "string",
-          "store" : "yes",
-          "index" : "not_analyzed"
+          "index" : "not_analyzed",
+          "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+            }
+          }
         },
         "shipTypeID" : {
           "type" : "long"
         },
         "shipType" : {
-          "type" : "string",
-          "store" : "yes",
-          "index" : "not_analyzed"
+          "index" : "not_analyzed",
+          "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+            }
+          }
         },
         "shipName" : {
-          "type" : "string",
-          "store" : "yes",
-          "index" : "not_analyzed"
+          "index" : "not_analyzed",
+          "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+            }
+          }
         },
         "characterID" : {
           "type" : "long"
         },
         "charactername" : {
-          "type" : "string",
-          "store" : "yes",
-          "index" : "not_analyzed"
+          "index" : "not_analyzed",
+          "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+            }
+          }
         },
         "corporationID" : {
           "type" : "long"
         },
         "corporationName" : {
-          "type" : "string",
-          "store" : "yes",
-          "index" : "not_analyzed"
+          "index" : "not_analyzed",
+          "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+            }
+          }
         },
         "allianceID" : {
           "type" : "long"
         },
          "allianceName" : {
-          "type" : "string",
-          "store" : "yes",
-          "index" : "not_analyzed"
+          "index" : "not_analyzed",
+          "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+            }
+          }
         },
         "damegeTaken" : {
           "type" : "long"
