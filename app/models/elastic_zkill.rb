@@ -31,7 +31,7 @@ class ElasticZkill
 
   def loss_item(item)
     solarSystem = SolarSystem.find(item["solarSystemID"])
-    region = Region.find(solarSystem.regionId)
+    region = Region.find(solarSystem.region_id)
     ship = Ship.find(item["victim"]["shipTypeID"])
     location = InvItem.find(item["zkb"]["locationID"])
     j = {
@@ -65,11 +65,14 @@ class ElasticZkill
     day_end = (day_s.to_date + 1).strftime("%Y%m%d").to_s + "0000"
 
     end_flg = false
-    binding.pry
     page = 1
 
-    delete_index(day_s)
+    begin
+      delete_index(day_s)
+    rescue Exception => e
+    end
     create_index(day_s)
+
     put_mapping(day_s)
 
     while !end_flg
@@ -77,6 +80,16 @@ class ElasticZkill
                                          current_page: page)
       end_flg = true if !response.is_success || response.end_flg
       page = page + 1
+
+      items = response.items
+      items.each do |item|
+        r = loss_item(item)
+        begin
+          @client_e.create_document("zkill", item["killID"], r)
+        rescue Exception => e
+          Rails.logger.warn e.message
+        end
+      end
     end
   end
 
@@ -100,8 +113,8 @@ class ElasticZkill
         },
         "regionName" : {
           "type" : "string",
-          "store" : "yes"
-          "index" : "not_alanyzed"
+          "store" : "yes",
+          "index" : "not_analyzed"
         },
         "solarSystemID" : {
           "type" : "long"
@@ -109,28 +122,28 @@ class ElasticZkill
         "solarSystemName" : {
           "type" : "string",
           "store" : "yes",
-          "index" : "not_alanyzed"
+          "index" : "not_analyzed"
         },
         "locationID" : {
-          "type" : "locationID"
+          "type" : "long"
         },
         "locationName" : {
           "type" : "string",
           "store" : "yes",
-          "index" : "not_alanyzed"
+          "index" : "not_analyzed"
         },
         "shipTypeID" : {
-          "type" : "long
+          "type" : "long"
         },
         "shipType" : {
           "type" : "string",
           "store" : "yes",
-          "index" : "not_alanyzed"
+          "index" : "not_analyzed"
         },
         "shipName" : {
           "type" : "string",
           "store" : "yes",
-          "index" : "not_alanyzed"
+          "index" : "not_analyzed"
         },
         "characterID" : {
           "type" : "long"
@@ -138,7 +151,7 @@ class ElasticZkill
         "charactername" : {
           "type" : "string",
           "store" : "yes",
-          "index" : "not_alanyzed"
+          "index" : "not_analyzed"
         },
         "corporationID" : {
           "type" : "long"
@@ -146,7 +159,7 @@ class ElasticZkill
         "corporationName" : {
           "type" : "string",
           "store" : "yes",
-          "index" : "not_alanyzed"
+          "index" : "not_analyzed"
         },
         "allianceID" : {
           "type" : "long"
@@ -154,7 +167,7 @@ class ElasticZkill
          "allianceName" : {
           "type" : "string",
           "store" : "yes",
-          "index" : "not_alanyzed"
+          "index" : "not_analyzed"
         },
         "damegeTaken" : {
           "type" : "long"
@@ -166,7 +179,7 @@ class ElasticZkill
           "type" : "long"
         },
         "npc" : {
-          "type" :boolean"
+          "type" : "boolean"
         }
 
       }
