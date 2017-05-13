@@ -26,7 +26,8 @@ ActiveRecord::Schema.define(version: 0) do
   end
 
   create_table "solar_systems", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin ROW_FORMAT=COMPACT" do |t|
-    t.string "name", null: false
+    t.integer "region_id", null: false
+    t.string  "name",      null: false
   end
 
 end

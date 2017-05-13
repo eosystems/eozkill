@@ -3,7 +3,7 @@ class ZkillResponse
   include ActiveModel::Validations::Callbacks
 
   attr_accessor *%i(
-    is_success victim attackers killID killTime zkb items
+    is_success victim attackers killID killTime zkb items end_flg
   )
 
   def self.parse(response, current_page: 1)
@@ -31,6 +31,11 @@ class ZkillResponse
       r.is_success = response.success?
       if body != ""
         r.items = body
+      end
+      if r.items.count < 200
+        r.end_flg = true
+      else
+        r.end_flg = false
       end
     end
   end

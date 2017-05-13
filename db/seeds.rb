@@ -27,6 +27,7 @@ CSV.foreach('data/mapSolarSystems.csv') do |row|
   end
   SolarSystem.create(
     :id => row[2],
+    :region_id => row[0],
     :name => row[3],
   )
 end
