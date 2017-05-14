@@ -71,10 +71,12 @@ class ElasticZkill
     create_index(day_s)
     put_mapping(day_s)
 
-    fetch_by_day_and_region_id(day_start, day_end, 10000069, create_loss_index_name(day_s))
-    fetch_by_day_and_region_id(day_start, day_end, 10000033, create_loss_index_name(day_s))
-    fetch_by_day_and_region_id(day_start, day_end, 10000048, create_loss_index_name(day_s))
-    fetch_by_day_and_region_id(day_start, day_end, 10000064, create_loss_index_name(day_s))
+    fetch_by_day_and_region_id(day_start, day_end, 10000069, create_loss_index_name(day_s)) #blackrise
+    fetch_by_day_and_region_id(day_start, day_end, 10000033, create_loss_index_name(day_s)) #The Citadel
+    fetch_by_day_and_region_id(day_start, day_end, 10000048, create_loss_index_name(day_s)) #Placid
+    fetch_by_day_and_region_id(day_start, day_end, 10000064, create_loss_index_name(day_s)) #Essence
+    fetch_by_day_and_region_id(day_start, day_end, 10000051, create_loss_index_name(day_s)) #Cloud Ring
+    fetch_by_day_and_region_id(day_start, day_end, 10000046, create_loss_index_name(day_s)) #Fade
   end
 
   def create_loss_index_name(day_s)
