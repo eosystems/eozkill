@@ -22,7 +22,7 @@ class ElasticZkill
     location = InvItem.find(item["zkb"]["locationID"])
     j = {
       killID: item["killID"],
-      killTime: item["killTime"].to_time.to_i,
+      killTime: item["killTime"].to_time,
       regionID: region.id,
       regionName: region.name,
       solarSystemID: item["solarSystemID"],
