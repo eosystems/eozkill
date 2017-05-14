@@ -1,6 +1,7 @@
 defaults: &defaults
   applications:
-    zkill_user_agent: ""
+    zkill_user_agent: "https://github.com/eosystems/xxx MODE:test Maintainer:Chatora Paaltomo(quick.xp@gmail.com)"
+    es_server: localhost
     test_mode: false #true/false
 development:
   <<: *defaults
