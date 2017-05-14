@@ -1,9 +1,6 @@
 # Load the Rails application.
 require_relative 'application'
 
-# Initialize the Rails application.
-Rails.application.initialize!
-
 class Logger
   class Formatter
     def call(severity, time, progname, msg)
@@ -17,3 +14,6 @@ class Logger
     end
   end
 end
+
+# Initialize the Rails application.
+Rails.application.initialize!
