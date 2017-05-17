@@ -29,6 +29,8 @@ CSV.foreach('data/mapSolarSystems.csv') do |row|
     :id => row[2],
     :region_id => row[0],
     :name => row[3],
+    :security => row[21],
+    :security_class => row[25],
   )
 end
 
@@ -45,8 +47,6 @@ CSV.foreach('data/invNames.csv') do |row|
   r = InvItem.new(
     :id => row[0],
     :name => row[1],
-    :security => row[21],
-    :security_class => row[25]
   )
   results << r
   if count % COMMIT_COUNT == 0
