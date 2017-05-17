@@ -11,6 +11,7 @@ gem 'elasticsearch-rails', '5.0'
 gem 'elasticsearch-model', '5.0'
 gem 'mysql2', '0.3.19'
 gem 'convergence'
+gem 'activerecord-import'
 
 group :development do
   gem 'listen'

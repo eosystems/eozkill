@@ -32,6 +32,9 @@ CSV.foreach('data/mapSolarSystems.csv') do |row|
   )
 end
 
+COMMIT_COUNT = 5000
+results = []
+count = 0
 InvItem.delete_all
 header = true
 CSV.foreach('data/invNames.csv') do |row|
@@ -39,9 +42,16 @@ CSV.foreach('data/invNames.csv') do |row|
     header = false
     next
   end
-  InvItem.create(
+  r = InvItem.new(
     :id => row[0],
     :name => row[1],
   )
+  results << r
+  if count % COMMIT_COUNT == 0
+    InvItem.import results
+    results = []
+  end
+  count = count + 1
 end
 
+InvItem.import results
