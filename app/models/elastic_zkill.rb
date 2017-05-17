@@ -27,6 +27,8 @@ class ElasticZkill
       regionName: region.name,
       solarSystemID: item["solarSystemID"],
       solarSystemName: solarSystem.name,
+      security: solarSystem.security,
+      securityClass: solarSystem.security_class,
       locationID: item["zkb"]["locationID"],
       locationName: location.name,
       shipTypeID: item["victim"]["shipTypeID"],
