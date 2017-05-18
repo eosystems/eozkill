@@ -32,4 +32,7 @@ ActiveRecord::Schema.define(version: 0) do
     t.string  "security_class"
   end
 
+  create_table "system_counts", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin ROW_FORMAT=COMPACT" do |t|
+  end
+
 end

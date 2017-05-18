@@ -12,24 +12,35 @@ class ElasticZkillRedisq
 
   def loop
     loop_end = false
-    while !loop_end
-      response = @client_z.fetch
-      if response.items == nil
-        loop_end = true
-        Rails.logger.info "end"
-        next
+    begin
+      while !loop_end
+        response = @client_z.fetch
+        if response.items == nil
+          loop_end = true
+          Rails.logger.info "end"
+          next
+        end
+        r = convert_item(response.items)
+        if r != nil
+          day_s = response.items["killmail"]["killTime"].to_date.strftime("%Y%m%d").to_s
+          index_name =
+            "zkill_loss_" + day_s
+          begin
+            @client_e.create_document(index_name, response.items["killID"], r)
+          rescue Elasticsearch::Transport::Transport::Errors::Conflict
+            Rails.logger.warn "version conflict:" + response.items["killID"].to_s
+          end
+
+          Rails.logger.info "put data:" + day_s.to_s + ":" + response.items["killID"].to_s
+        else
+          Rails.logger.warn "character id is nil:" + response.items["killID"].to_s
+        end
       end
-      r = convert_item(response.items)
-      if r != nil
-        day_s = response.items["killmail"]["killTime"].to_date.strftime("%Y%m%d").to_s
-        index_name =
-          "zkill_loss_" + day_s
-        @client_e.create_document(index_name, response.items["killID"], r)
-        Rails.logger.info "put data:" + day_s.to_s + ":" + response.items["killID"].to_s
-      else
-        Rails.logger.warn "character id is nil:" + response.items["killID"].to_s
-      end
+    rescue Exception => e
+      Rails.logger.error "error:" + e.to_s
     end
+
+
   end
 
   def convert_item(item)
