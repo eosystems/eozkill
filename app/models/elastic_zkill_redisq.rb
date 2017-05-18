@@ -11,6 +11,10 @@ class ElasticZkillRedisq
 
 
   def loop
+    return if SystemCount.count > 0
+
+    SystemCount.new.save!
+
     loop_end = false
     begin
       while !loop_end
@@ -40,6 +44,7 @@ class ElasticZkillRedisq
       Rails.logger.error "error:" + e.to_s
     end
 
+    SystemCount.delete_all
 
   end
 
