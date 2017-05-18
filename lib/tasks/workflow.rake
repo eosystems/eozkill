@@ -36,5 +36,22 @@ namespace :eozkill do
       ElasticZkill.new.put_mapping(s)
     end
 
+    desc "create_next_indexer"
+    task :create_next_index => :environment do |task, args|
+      s = (Time.zone.now.to_date + 1).strftime("%Y%m%d")
+      begin
+        ElasticZkill.new.delete_index(s)
+      rescue Exception
+        puts "delete index error" + s.to_s
+      end
+      ElasticZkill.new.create_index(s)
+      ElasticZkill.new.put_mapping(s)
+    end
+
+    desc "realtime"
+    task :realtime => :environment do |task, args|
+      ElasticZkillRedisq.new.loop
+    end
+
   end
 end
