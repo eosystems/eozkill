@@ -30,9 +30,17 @@ class ElasticZkillRedisq
           index_name =
             "zkill_loss_" + day_s
           begin
-            @client_e.create_document(index_name, response.items["killID"], r)
+            @client_e.create_document(index_name, response.items["killID"], r.to_json)
           rescue Elasticsearch::Transport::Transport::Errors::Conflict
             Rails.logger.warn "version conflict:" + response.items["killID"].to_s
+          end
+
+          # Attacker
+          attacker_index_name = "zkill_attacker_" + day_s
+          attacker_response = response.items["killmail"]["attackers"].to_a
+          attacker_response.each_with_index do |t, idx|
+            r2 = convert_item2(r,t)
+
           end
 
           Rails.logger.info "put data:" + day_s.to_s + ":" + response.items["killID"].to_s
@@ -89,11 +97,25 @@ class ElasticZkillRedisq
       allianceID: alliance_id,
       allianceName: alliance_name,
       damageTaken: item["killmail"]["victim"]["damageTaken"],
-      totalValue: item["zkb"]["totalValue"],
+      totalValue: item["zkb"]["totalValue"].to_i,
       points: item["zkb"]["points"],
       npc: item["zkb"]["npc"]
     }
-    j.to_json
-
   end
+
+  #def convert_item2(item, a_item)
+  #  r = item
+  #  r.delete("shipTypeID")
+  #  r.delete("shipName")
+  #  r.delete("characterID")
+  #  r.delete("characterName")
+  #  r.delete("corporationID")
+  #  r.delete("corporationName")
+  #  r.delete("allianceID")
+  #  r.delete("allianceName")
+  #  r.delete("damageTaken")
+  #  r.delete("points")
+  #end
+
+
 end
