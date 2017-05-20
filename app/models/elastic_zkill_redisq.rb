@@ -35,14 +35,6 @@ class ElasticZkillRedisq
             Rails.logger.warn "version conflict:" + response.items["killID"].to_s
           end
 
-          # Attacker
-          attacker_index_name = "zkill_attacker_" + day_s
-          attacker_response = response.items["killmail"]["attackers"].to_a
-          attacker_response.each_with_index do |t, idx|
-            r2 = convert_item2(r,t)
-
-          end
-
           Rails.logger.info "put data:" + day_s.to_s + ":" + response.items["killID"].to_s
         else
           Rails.logger.warn "character id is nil:" + response.items["killID"].to_s
@@ -50,6 +42,7 @@ class ElasticZkillRedisq
       end
     rescue Exception => e
       Rails.logger.error "error:" + e.to_s
+      Rails.logger.error "error:" + e.backtrace.join("\n")
     end
 
     SystemCount.delete_all
@@ -62,9 +55,15 @@ class ElasticZkillRedisq
     ship = nil
     begin
       ship = Ship.find(item["killmail"]["victim"]["shipType"]["id"])
-    rescue Exception => e
-      ship = Ship.find(670)
-    end
+    rescue ActiveRecord::RecordNotFound
+      Ship.new(
+        id: item["killmail"]["victim"]["shipType"]["id"],
+        ship_type: item["killmail"]["victim"]["shipType"]["name"],
+        ship_name: item["killmail"]["victim"]["shipType"]["name"]
+      ).save
+      ship = Ship.find(item["killmail"]["victim"]["shipType"]["id"])
+      Rails.logger.info("create new ship:" + ship.id.to_s)
+   end
 
     location = InvItem.find(item["zkb"]["locationID"])
     alliance_name = ""
@@ -72,9 +71,45 @@ class ElasticZkillRedisq
     if item["killmail"]["victim"]["alliance"] != nil
       alliance_id =  item["killmail"]["victim"]["alliance"]["id"]
       alliance_name = item["killmail"]["victim"]["alliance"]["name"]
+    else
+      alliance_id = 0
+      alliance_name = ""
     end
 
     return nil if item["killmail"]["victim"]["character"] == nil
+    # Attackers
+    attackers = []
+    item["killmail"]["attackers"].to_a.each do |ar|
+      if ar["shipType"] != nil
+        a_ship_id = ar["shipType"]["id"]
+
+        begin
+          a_ship = Ship.find(ar["shipType"]["id"])
+        rescue ActiveRecord::RecordNotFound
+          Ship.new(
+            id: ar["shipType"]["id"],
+            ship_type: ar["shipType"]["name"],
+            ship_name: ar["shipType"]["name"]
+          ).save
+          a_ship = Ship.find(ar["shipType"]["id"])
+          Rails.logger.info("create new ship:" + a_ship.to_s)
+        end
+
+        tmp = {
+          shipName: a_ship.ship_name,
+          shipTypeID: a_ship.id,
+          shipType: a_ship.ship_type,
+          characterID: ar["character"].present? ? ar["character"]["id"] : 0,
+          characterName: ar["character"].present? ? ar["character"]["name"] : "",
+          corporationID: ar["coporation"].present? ? ar["corporation"]["id"] : 0,
+          corporationName: ar["coporation"].present? ? ar["corporation"]["name"] : "",
+          allianceID: ar["alliance"].present? ? ar["alliance"]["id"] : 0,
+          allianceName: ar["alliance"].present? ? ar["alliance"]["name"] : "",
+          damageDone: ar["damageDone"].to_i
+        }
+        attackers.push(tmp)
+      end
+    end
 
     j = {
       killID: item["killID"],
@@ -99,7 +134,9 @@ class ElasticZkillRedisq
       damageTaken: item["killmail"]["victim"]["damageTaken"],
       totalValue: item["zkb"]["totalValue"].to_i,
       points: item["zkb"]["points"],
-      npc: item["zkb"]["npc"]
+      npc: item["zkb"]["npc"],
+      attackerCount: item["killmail"]["attackerCount"].to_i,
+      attackers: attackers
     }
   end
 
