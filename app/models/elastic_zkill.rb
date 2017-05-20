@@ -16,7 +16,34 @@ class ElasticZkill
     begin
       ship = Ship.find(item["victim"]["shipTypeID"])
     rescue Exception => e
-      ship = Ship.find(670)
+      return 
+    end
+
+    # Attackers
+    attackers = []
+    item["attackers"].to_a.each do |ar|
+      if ar["shipTypeID"] != nil
+        a_ship_id = ar["shipTypeID"]
+
+        begin
+          a_ship = Ship.find(ar["shipTypeID"])
+        rescue ActiveRecord::RecordNotFound
+          return
+        end
+        tmp = {
+          shipName: a_ship.ship_name,
+          shipTypeID: a_ship.id,
+          shipType: a_ship.ship_type,
+          characterID: ar["characterID"].present? ? ar["characterID"] : 0,
+          characterName: ar["characterName"].present? ? ar["characterName"] : "",
+          corporationID: ar["corporationID"].present? ? ar["corporationID"] : 0,
+          corporationName: ar["corporationName"].present? ? ar["corporationName"] : "",
+          allianceID: ar["allianceID"].present? ? ar["allianceID"] : 0,
+          allianceName: ar["allianceName"].present? ? ar["allianceName"] : "",
+          damageDone: ar["damageDone"].to_i
+        }
+        attackers.push(tmp)
+      end
     end
 
     location = InvItem.find(item["zkb"]["locationID"])
@@ -41,9 +68,11 @@ class ElasticZkill
       allianceID: item["victim"]["allianceID"],
       allianceName: item["victim"]["allianceName"],
       damageTaken: item["victim"]["damageTaken"],
-      totalValue: item["zkb"]["totalValue"],
+      totalValue: item["zkb"]["totalValue"].to_i,
       points: item["zkb"]["points"],
-      npc: item["zkb"]["npc"]
+      npc: item["zkb"]["npc"],
+      attackerCount: item["attackerCount"].to_i,
+      attackers: attackers
     }
     j.to_json
   end
@@ -73,12 +102,17 @@ class ElasticZkill
     create_index(day_s)
     put_mapping(day_s)
 
-    fetch_by_day_and_region_id(day_start, day_end, 10000069, create_loss_index_name(day_s)) #blackrise
-    fetch_by_day_and_region_id(day_start, day_end, 10000033, create_loss_index_name(day_s)) #The Citadel
-    fetch_by_day_and_region_id(day_start, day_end, 10000048, create_loss_index_name(day_s)) #Placid
-    fetch_by_day_and_region_id(day_start, day_end, 10000064, create_loss_index_name(day_s)) #Essence
-    fetch_by_day_and_region_id(day_start, day_end, 10000051, create_loss_index_name(day_s)) #Cloud Ring
-    fetch_by_day_and_region_id(day_start, day_end, 10000046, create_loss_index_name(day_s)) #Fade
+    #fetch_by_day_and_region_id(day_start, day_end, 10000069, create_loss_index_name(day_s)) #blackrise
+    #fetch_by_day_and_region_id(day_start, day_end, 10000033, create_loss_index_name(day_s)) #The Citadel
+    #fetch_by_day_and_region_id(day_start, day_end, 10000048, create_loss_index_name(day_s)) #Placid
+    #fetch_by_day_and_region_id(day_start, day_end, 10000064, create_loss_index_name(day_s)) #Essence
+    #fetch_by_day_and_region_id(day_start, day_end, 10000051, create_loss_index_name(day_s)) #Cloud Ring
+    #fetch_by_day_and_region_id(day_start, day_end, 10000046, create_loss_index_name(day_s)) #Fade
+    regions = Region.all
+    regions.each do |region|
+      fetch_by_day_and_region_id(day_start, day_end, region.id, create_loss_index_name(day_s))
+    end
+
   end
 
   def create_loss_index_name(day_s)

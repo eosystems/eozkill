@@ -101,8 +101,8 @@ class ElasticZkillRedisq
           shipType: a_ship.ship_type,
           characterID: ar["character"].present? ? ar["character"]["id"] : 0,
           characterName: ar["character"].present? ? ar["character"]["name"] : "",
-          corporationID: ar["coporation"].present? ? ar["corporation"]["id"] : 0,
-          corporationName: ar["coporation"].present? ? ar["corporation"]["name"] : "",
+          corporationID: ar["corporation"].present? ? ar["corporation"]["id"] : 0,
+          corporationName: ar["corporation"].present? ? ar["corporation"]["name"] : "",
           allianceID: ar["alliance"].present? ? ar["alliance"]["id"] : 0,
           allianceName: ar["alliance"].present? ? ar["alliance"]["name"] : "",
           damageDone: ar["damageDone"].to_i
