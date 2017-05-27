@@ -29,6 +29,12 @@ class ElasticZkillRedisq
           day_s = response.items["killmail"]["killTime"].to_date.strftime("%Y%m%d").to_s
           index_name =
             "zkill_loss_" + day_s
+          # ゴミデータでESエラーがでるのを防ぐ
+          if day_s < (Time.now.to_date - 3).strftime("%Y%m%d").to_s
+            Rails.logger.warn "mayby error data. ignore:" + day_s
+            next
+          end
+
           begin
             @client_e.create_document(index_name, response.items["killID"], r.to_json)
           rescue Elasticsearch::Transport::Transport::Errors::Conflict
