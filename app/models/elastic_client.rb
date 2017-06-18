@@ -19,6 +19,10 @@ class ElasticClient
     @client.indices.create(index: name)
   end
 
+  def create_index2(name, shard)
+    @client.indices.create(index: name, body: {settings: { index: { number_of_shards: 2}}})
+  end
+
   def create_document(index_name, id, body)
     @client.create({ index: index_name, type: 'info', id: id, body: body })
   end

@@ -48,6 +48,16 @@ namespace :eozkill do
       ElasticZkill.new.put_mapping(s)
     end
 
+    desc "delete_past_indexer"
+    task :delete_past_index => :environment do |task, args|
+      s = (Time.zone.now.to_date - 31).strftime("%Y%m%d")
+      begin
+        ElasticZkill.new.delete_index(s)
+      rescue Exception
+        puts "delete index error" + s.to_s
+      end
+    end
+
     desc "realtime"
     task :realtime => :environment do |task, args|
       ElasticZkillRedisq.new.loop
